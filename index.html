@@ -9,53 +9,66 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: flex-start;
             background-color: #f8f9fa;
-            margin-top: 30px;
-        }
-        canvas {
-            background-color: #ffffff;
-            border: 1px solid #ced4da;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .controls-container {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: 120px 250px 80px;
-            row-gap: 15px;
-            align-items: center;
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        label {
-            font-weight: bold;
-            color: #343a40;
-        }
-        input[type=range] {
-            width: 100%;
-        }
-        span {
-            font-family: monospace;
-            font-size: 1.1em;
-            text-align: right;
-            color: #495057;
+            margin: 0;
+            padding: 4px;
+            overflow: hidden; /* PowerPoint içinde dikey scroll çıkmasını engeller */
+            height: 100vh;
+            box-sizing: border-box;
         }
         .formula-container {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
+            margin-bottom: 4px;
         }
         select {
-            font-size: 1.5em;
-            padding: 5px 10px;
+            font-size: 1.1em;
+            padding: 2px 8px;
             font-family: 'Times New Roman', Times, serif;
             font-style: italic;
             border: 1px solid #ced4da;
             border-radius: 4px;
             background-color: #fff;
             cursor: pointer;
+        }
+        canvas {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            height: 220px; /* PowerPoint için ideal netlik ve yükseklik oranı */
+            display: block;
+        }
+        .controls-container {
+            margin-top: 4px;
+            display: grid;
+            grid-template-columns: 95px 1fr 55px;
+            row-gap: 4px;
+            column-gap: 8px;
+            align-items: center;
+            background: #ffffff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        label {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #343a40;
+        }
+        input[type=range] {
+            width: 100%;
+            margin: 0;
+        }
+        span {
+            font-family: monospace;
+            font-size: 0.85em;
+            text-align: right;
+            color: #495057;
         }
     </style>
 </head>
@@ -70,7 +83,7 @@
         </select>
     </div>
     
-    <canvas id="graphCanvas" width="800" height="400"></canvas>
+    <canvas id="graphCanvas"></canvas>
     
     <div class="controls-container">
         <label for="k_slider">k (Genlik):</label>
@@ -108,17 +121,29 @@
             s: document.getElementById('s_val')
         };
 
-        const rangeX = 5 * Math.PI; 
-        const rangeY = 12;
-        
-        const scaleX = canvas.width / rangeX;
-        const scaleY = canvas.height / rangeY;
-        
-        const originX = canvas.width / 2;
-        const originY = canvas.height / 2;
-
         function drawGraph() {
+            // Yüksek çözünürlük (Retina / HiDPI) ayarı
+            const dpr = window.devicePixelRatio || 1;
+            const displayWidth = canvas.clientWidth;
+            const displayHeight = canvas.clientHeight;
+
+            if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
+                canvas.width = displayWidth * dpr;
+                canvas.height = displayHeight * dpr;
+            }
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            const rangeX = 5 * Math.PI; 
+            const rangeY = 12;
+            
+            const scaleX = displayWidth / rangeX;
+            const scaleY = displayHeight / rangeY;
+            
+            const originX = displayWidth / 2;
+            const originY = displayHeight / 2;
             
             const funcType = funcSelector.value;
             const k = parseFloat(inputs.k.value);
@@ -140,12 +165,12 @@
             for(let x = -2 * Math.PI; x <= 2 * Math.PI; x += Math.PI / 2) {
                 let px = originX + x * scaleX;
                 ctx.moveTo(px, 0);
-                ctx.lineTo(px, canvas.height);
+                ctx.lineTo(px, displayHeight);
             }
             for(let y = -5; y <= 5; y++) {
                 let py = originY - y * scaleY;
                 ctx.moveTo(0, py);
-                ctx.lineTo(canvas.width, py);
+                ctx.lineTo(displayWidth, py);
             }
             ctx.stroke();
 
@@ -154,9 +179,9 @@
             ctx.strokeStyle = '#495057';
             ctx.lineWidth = 1.5;
             ctx.moveTo(0, originY);
-            ctx.lineTo(canvas.width, originY);
+            ctx.lineTo(displayWidth, originY);
             ctx.moveTo(originX, 0);
-            ctx.lineTo(originX, canvas.height);
+            ctx.lineTo(originX, displayHeight);
             ctx.stroke();
 
             // Eksen Değerlerinin Yazdırılması
@@ -210,7 +235,7 @@
             let isFirstPoint = true;
             let prevMathY = 0;
             
-            for (let px = 0; px <= canvas.width; px++) {
+            for (let px = 0; px <= displayWidth; px++) {
                 let mathX = (px - originX) / scaleX;
                 let angle = m * mathX + r;
                 let mathY = 0;
@@ -240,6 +265,7 @@
                 prevMathY = mathY;
             }
             ctx.stroke();
+            ctx.restore();
         }
 
         Object.values(inputs).forEach(input => {
@@ -247,6 +273,7 @@
         });
         funcSelector.addEventListener('change', drawGraph);
 
+        window.addEventListener('resize', drawGraph);
         drawGraph();
     </script>
 </body>
