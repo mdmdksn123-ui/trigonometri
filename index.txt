@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Trigonometrik Fonksiyonlar Simülasyonu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f8f9fa;
+            margin-top: 30px;
+        }
+        canvas {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .controls-container {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 120px 250px 80px;
+            row-gap: 15px;
+            align-items: center;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        label {
+            font-weight: bold;
+            color: #343a40;
+        }
+        input[type=range] {
+            width: 100%;
+        }
+        span {
+            font-family: monospace;
+            font-size: 1.1em;
+            text-align: right;
+            color: #495057;
+        }
+        .formula-container {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        select {
+            font-size: 1.5em;
+            padding: 5px 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="formula-container">
+        <select id="func_selector">
+            <option value="sin">f(x) = k &middot; sin(mx + r) + s</option>
+            <option value="cos">f(x) = k &middot; cos(mx + r) + s</option>
+            <option value="tan">f(x) = k &middot; tan(mx + r) + s</option>
+            <option value="cot">f(x) = k &middot; cot(mx + r) + s</option>
+        </select>
+    </div>
+    
+    <canvas id="graphCanvas" width="800" height="400"></canvas>
+    
+    <div class="controls-container">
+        <label for="k_slider">k (Genlik):</label>
+        <input type="range" id="k_slider" min="-5" max="5" step="0.5" value="1">
+        <span id="k_val">1</span>
+
+        <label for="m_slider">m (Frekans):</label>
+        <input type="range" id="m_slider" min="-5" max="5" step="0.5" value="1">
+        <span id="m_val">1</span>
+
+        <label for="r_slider">r (Faz):</label>
+        <input type="range" id="r_slider" min="-1" max="1" step="0.25" value="0">
+        <span id="r_val">0,00 &pi;</span>
+
+        <label for="s_slider">s (Düşey):</label>
+        <input type="range" id="s_slider" min="-5" max="5" step="0.5" value="0">
+        <span id="s_val">0</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const funcSelector = document.getElementById('func_selector');
+        const inputs = {
+            k: document.getElementById('k_slider'),
+            m: document.getElementById('m_slider'),
+            r: document.getElementById('r_slider'),
+            s: document.getElementById('s_slider')
+        };
+        const displays = {
+            k: document.getElementById('k_val'),
+            m: document.getElementById('m_val'),
+            r: document.getElementById('r_val'),
+            s: document.getElementById('s_val')
+        };
+
+        const rangeX = 5 * Math.PI; 
+        const rangeY = 12;
+        
+        const scaleX = canvas.width / rangeX;
+        const scaleY = canvas.height / rangeY;
+        
+        const originX = canvas.width / 2;
+        const originY = canvas.height / 2;
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const funcType = funcSelector.value;
+            const k = parseFloat(inputs.k.value);
+            const m = parseFloat(inputs.m.value);
+            const r_factor = parseFloat(inputs.r.value);
+            const r = r_factor * Math.PI; 
+            const s = parseFloat(inputs.s.value);
+            
+            displays.k.textContent = k.toString().replace('.', ',');
+            displays.m.textContent = m.toString().replace('.', ',');
+            displays.r.innerHTML = r_factor.toFixed(2).replace('.', ',') + " &pi;";
+            displays.s.textContent = s.toString().replace('.', ',');
+
+            // Altlık (Grid) Çizimi
+            ctx.beginPath();
+            ctx.strokeStyle = '#e9ecef';
+            ctx.lineWidth = 1;
+
+            for(let x = -2 * Math.PI; x <= 2 * Math.PI; x += Math.PI / 2) {
+                let px = originX + x * scaleX;
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, canvas.height);
+            }
+            for(let y = -5; y <= 5; y++) {
+                let py = originY - y * scaleY;
+                ctx.moveTo(0, py);
+                ctx.lineTo(canvas.width, py);
+            }
+            ctx.stroke();
+
+            // Ana Eksenlerin Çizimi
+            ctx.beginPath();
+            ctx.strokeStyle = '#495057';
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            ctx.stroke();
+
+            // Eksen Değerlerinin Yazdırılması
+            ctx.font = '12px "Segoe UI", Tahoma, sans-serif';
+            ctx.fillStyle = '#495057';
+
+            // Y Ekseni Etiketleri
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for(let y = -5; y <= 5; y++) {
+                if (y !== 0) {
+                    let py = originY - y * scaleY;
+                    ctx.fillText(y.toString(), originX - 8, py);
+                }
+            }
+
+            // X Ekseni Etiketleri (Radyan cinsinden)
+            const xTicks = [
+                {val: -2 * Math.PI, text: "-2\u03C0"},
+                {val: -1.5 * Math.PI, text: "-3\u03C0/2"},
+                {val: -Math.PI, text: "-\u03C0"},
+                {val: -0.5 * Math.PI, text: "-\u03C0/2"},
+                {val: 0.5 * Math.PI, text: "\u03C0/2"},
+                {val: Math.PI, text: "\u03C0"},
+                {val: 1.5 * Math.PI, text: "3\u03C0/2"},
+                {val: 2 * Math.PI, text: "2\u03C0"}
+            ];
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            xTicks.forEach(tick => {
+                let px = originX + tick.val * scaleX;
+                ctx.fillText(tick.text, px, originY + 8);
+            });
+
+            // Orijin Noktası (0)
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.fillText("0", originX - 5, originY + 5);
+
+            // Fonksiyon Eğrisinin Çizimi
+            ctx.beginPath();
+            
+            if (funcType === 'sin') ctx.strokeStyle = '#0d6efd';
+            else if (funcType === 'cos') ctx.strokeStyle = '#dc3545';
+            else if (funcType === 'tan') ctx.strokeStyle = '#198754';
+            else if (funcType === 'cot') ctx.strokeStyle = '#fd7e14';
+            
+            ctx.lineWidth = 2.5;
+            
+            let isFirstPoint = true;
+            let prevMathY = 0;
+            
+            for (let px = 0; px <= canvas.width; px++) {
+                let mathX = (px - originX) / scaleX;
+                let angle = m * mathX + r;
+                let mathY = 0;
+
+                if (funcType === 'sin') {
+                    mathY = k * Math.sin(angle) + s;
+                } else if (funcType === 'cos') {
+                    mathY = k * Math.cos(angle) + s;
+                } else if (funcType === 'tan') {
+                    mathY = k * Math.tan(angle) + s;
+                } else if (funcType === 'cot') {
+                    mathY = k * (Math.cos(angle) / Math.sin(angle)) + s;
+                }
+                
+                let py = originY - (mathY * scaleY);
+                
+                if (isFirstPoint) {
+                    ctx.moveTo(px, py);
+                    isFirstPoint = false;
+                } else {
+                    if (Math.abs(mathY - prevMathY) > 10) {
+                        ctx.moveTo(px, py);
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+                prevMathY = mathY;
+            }
+            ctx.stroke();
+        }
+
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', drawGraph);
+        });
+        funcSelector.addEventListener('change', drawGraph);
+
+        drawGraph();
+    </script>
+</body>
+</html>
