@@ -13,7 +13,7 @@
             background-color: #f8f9fa;
             margin: 0;
             padding: 4px;
-            overflow: hidden; /* PowerPoint içinde dikey scroll çıkmasını engeller */
+            overflow: hidden;
             height: 100vh;
             box-sizing: border-box;
         }
@@ -36,7 +36,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 600px;
-            height: 220px; /* PowerPoint için ideal netlik ve yükseklik oranı */
+            height: 310px;
             display: block;
         }
         .controls-container {
@@ -122,7 +122,6 @@
         };
 
         function drawGraph() {
-            // Yüksek çözünürlük (Retina / HiDPI) ayarı
             const dpr = window.devicePixelRatio || 1;
             const displayWidth = canvas.clientWidth;
             const displayHeight = canvas.clientHeight;
@@ -188,7 +187,7 @@
             ctx.font = '12px "Segoe UI", Tahoma, sans-serif';
             ctx.fillStyle = '#495057';
 
-            // Y Ekseni Etiketleri
+            // Y Ekseni Etiketleri (Tümü eksenin sol tarafında toplandı)
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
             for(let y = -5; y <= 5; y++) {
@@ -217,7 +216,7 @@
                 ctx.fillText(tick.text, px, originY + 8);
             });
 
-            // Orijin Noktası (0)
+            // Orijin Noktası (0) - Sol alt köşede hizalı
             ctx.textAlign = 'right';
             ctx.textBaseline = 'top';
             ctx.fillText("0", originX - 5, originY + 5);
