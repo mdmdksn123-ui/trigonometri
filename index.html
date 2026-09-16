@@ -2,278 +2,638 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Trigonometrik Fonksiyonlar Simülasyonu</title>
+    <title>Kapsamlı Fonksiyonlar Simülasyonu</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background-color: #f8f9fa;
+            background-color: #f7f9fb;
+            color: #2c3e50;
             margin: 0;
-            padding: 4px;
+            padding: 5px;
+            line-height: 1.2;
             overflow: hidden;
             height: 100vh;
             box-sizing: border-box;
         }
-        .formula-container {
-            margin-bottom: 4px;
-        }
-        select {
-            font-size: 1.1em;
-            padding: 2px 8px;
-            font-family: 'Times New Roman', Times, serif;
-            font-style: italic;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            background-color: #fff;
-            cursor: pointer;
-        }
-        canvas {
-            background-color: #ffffff;
-            border: 1px solid #ced4da;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
-            height: 310px;
-            display: block;
-        }
-        .controls-container {
-            margin-top: 4px;
-            display: grid;
-            grid-template-columns: 95px 1fr 55px;
-            row-gap: 4px;
-            column-gap: 8px;
-            align-items: center;
+        .container {
+            max-width: 100%;
+            height: 100%;
+            margin: 0 auto;
             background: #ffffff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 600px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        label {
+        .master-selector-container {
+            text-align: center;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ecf0f1;
+            flex-shrink: 0;
+        }
+        .master-selector-container label {
             font-size: 0.8em;
             font-weight: bold;
-            color: #343a40;
+            color: #2c3e50;
+            margin-right: 6px;
         }
-        input[type=range] {
-            width: 100%;
+        .master-select {
+            font-size: 0.9em;
+            padding: 2px 8px;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            border: 2px solid #2980b9;
+            border-radius: 4px;
+            background-color: #fdfefe;
+            cursor: pointer;
+            color: #2980b9;
+            font-weight: bold;
+        }
+        .interactive-panel {
+            background: #f1f4f8;
+            border: 1px solid #d1d8e0;
+            border-radius: 6px;
+            padding: 6px 8px;
+            display: none;
+            flex-grow: 1;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .interactive-panel.active-module {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .top-row-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+        .mode-group, .toggle-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .mode-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.75em;
+        }
+        .mode-btn.active {
+            background: #2980b9;
+        }
+        .toggle-label {
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #34495e;
+            cursor: pointer;
+            background: #fff;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #dcdde1;
+        }
+        /* Tamamen Yatay (Yan Yana) Çalışma Alanı */
+        .workspace-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: #fff;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #dcdde1;
+            align-items: center;
+            flex-grow: 1;
+            box-sizing: border-box;
+        }
+        .sliders-section-horizontal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .slider-box {
+            background: #fafbfc;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #e1e8ed;
+        }
+        .slider-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        .slider-box h4 {
             margin: 0;
+            color: #2980b9;
+            font-size: 0.78em;
         }
-        span {
+        .type-select {
+            padding: 1px 3px;
+            font-size: 0.75em;
+            border-radius: 3px;
+            border: 1px solid #bdc3c7;
+            background: #fdfefe;
+        }
+        .math-select {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+        .sliders-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .slider-control {
+            background: #fff;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #e1e8ed;
+        }
+        .slider-control label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 0.75em;
+            color: #34495e;
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+        .slider-control input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            margin: 0;
+            height: 12px;
+        }
+        .slider-control span {
             font-family: monospace;
-            font-size: 0.85em;
-            text-align: right;
-            color: #495057;
+            font-size: 0.75em;
         }
+        .eq-display {
+            font-size: 0.75em;
+            background: #fafbfc;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #e1e8ed;
+            margin-bottom: 4px;
+        }
+        .result-box {
+            background: #eaf2f8;
+            border: 1px dashed #2980b9;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            display: none;
+            font-size: 0.75em;
+        }
+        .result-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.75em;
+            margin-bottom: 2px;
+        }
+        .graph-container {
+            width: 100%;
+            height: 100%;
+            min-height: 160px;
+            background: #fff;
+            border: 1px solid #bdc3c7;
+            display: block;
+        }
+        .adv-controls-container {
+            display: grid;
+            grid-template-columns: 90px 1fr 45px;
+            row-gap: 3px;
+            column-gap: 6px;
+            align-items: center;
+            background: #fff;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #e1e8ed;
+        }
+        .adv-controls-container label {
+            font-size: 0.78em;
+        }
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.8em;
+            margin: 0 2px;
+        }
+        .fraction > span { display: block; }
+        .fraction .numerator { border-bottom: 1px solid currentColor; padding: 0 2px; }
+        .fraction .denominator { padding: 0 2px; }
     </style>
 </head>
 <body>
 
-    <div class="formula-container">
-        <select id="func_selector">
-            <option value="sin">f(x) = k &middot; sin(mx + r) + s</option>
-            <option value="cos">f(x) = k &middot; cos(mx + r) + s</option>
-            <option value="tan">f(x) = k &middot; tan(mx + r) + s</option>
-            <option value="cot">f(x) = k &middot; cot(mx + r) + s</option>
+<div class="container">
+    <div class="master-selector-container">
+        <label for="master_selector">Modül:</label>
+        <select id="master_selector" class="master-select" onchange="switchModule()">
+            <option value="algebraic">Polinom ve Dört İşlem</option>
+            <option value="advanced">Üstel ve Logaritmik</option>
+            <option value="trigonometric">Trigonometrik</option>
         </select>
     </div>
-    
-    <canvas id="graphCanvas"></canvas>
-    
-    <div class="controls-container">
-        <label for="k_slider">k (Genlik):</label>
-        <input type="range" id="k_slider" min="-5" max="5" step="0.5" value="1">
-        <span id="k_val">1</span>
 
-        <label for="m_slider">m (Frekans):</label>
-        <input type="range" id="m_slider" min="-5" max="5" step="0.5" value="1">
-        <span id="m_val">1</span>
+    <!-- MODÜL 1: POLİNOM / 4 İŞLEM -->
+    <div id="module-algebraic" class="interactive-panel active-module">
+        <div class="top-row-controls">
+            <div class="mode-group">
+                <button class="mode-btn active" id="btn-mode-sum" onclick="setMode('sum')">f + g</button>
+                <button class="mode-btn" id="btn-mode-diff" onclick="setMode('diff')">f - g</button>
+                <button class="mode-btn" id="btn-mode-mul" onclick="setMode('mul')">f &middot; g</button>
+                <button class="mode-btn" id="btn-mode-div" onclick="setMode('div')">f / g</button>
+            </div>
+            <div class="toggle-group">
+                <label class="toggle-label"><input type="checkbox" id="show-f" checked onchange="updateAlgebraic()"> f</label>
+                <label class="toggle-label"><input type="checkbox" id="show-g" checked onchange="updateAlgebraic()"> g</label>
+            </div>
+        </div>
 
-        <label for="r_slider">r (Faz):</label>
-        <input type="range" id="r_slider" min="-1" max="1" step="0.25" value="0">
-        <span id="r_val">0,00 &pi;</span>
+        <div class="workspace-display">
+            <div>
+                <div class="sliders-section-horizontal" style="margin-bottom: 4px;">
+                    <div class="slider-box">
+                        <div class="slider-box-header">
+                            <h4>f(x)</h4>
+                            <select id="type-f" class="type-select" onchange="toggleFunctionType('f')">
+                                <option value="linear">Doğr.</option>
+                                <option value="quadratic" selected>Karesel</option>
+                            </select>
+                        </div>
+                        <div class="sliders-grid" id="grid-f">
+                            <div class="slider-control" id="wrap-a-f"><label><span>a:</span><span id="val-a">1</span></label><input type="range" id="slider-a" min="-5" max="5" step="1" value="1" oninput="updateAlgebraic()"></div>
+                            <div class="slider-control"><label><span>b:</span><span id="val-b">0</span></label><input type="range" id="slider-b" min="-5" max="5" step="1" value="0" oninput="updateAlgebraic()"></div>
+                            <div class="slider-control" id="wrap-c-f"><label><span>c:</span><span id="val-c">-1</span></label><input type="range" id="slider-c" min="-5" max="5" step="1" value="-1" oninput="updateAlgebraic()"></div>
+                        </div>
+                    </div>
 
-        <label for="s_slider">s (Düşey):</label>
-        <input type="range" id="s_slider" min="-5" max="5" step="0.5" value="0">
-        <span id="s_val">0</span>
+                    <div class="slider-box">
+                        <div class="slider-box-header">
+                            <h4>g(x)</h4>
+                            <select id="type-g" class="type-select" onchange="toggleFunctionType('g')">
+                                <option value="linear" selected>Doğr.</option>
+                                <option value="quadratic">Karesel</option>
+                            </select>
+                        </div>
+                        <div class="sliders-grid" id="grid-g">
+                            <div class="slider-control" id="wrap-m-g" style="display:none;"><label><span>m:</span><span id="val-m">1</span></label><input type="range" id="slider-m" min="-5" max="5" step="1" value="1" oninput="updateAlgebraic()"></div>
+                            <div class="slider-control"><label><span>n:</span><span id="val-n">1</span></label><input type="range" id="slider-n" min="-5" max="5" step="1" value="1" oninput="updateAlgebraic()"></div>
+                            <div class="slider-control"><label><span>k:</span><span id="val-k">0</span></label><input type="range" id="slider-k" min="-5" max="5" step="1" value="0" oninput="updateAlgebraic()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eq-display" id="equations-text"></div>
+                <button class="result-btn" id="toggle-result-btn" onclick="toggleResult()">Sonucu Göster</button>
+                <div class="result-box" id="result-content"></div>
+            </div>
+            <div>
+                <canvas id="graph-algebraic" class="graph-container"></canvas>
+            </div>
+        </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('graphCanvas');
-        const ctx = canvas.getContext('2d');
+    <!-- MODÜL 2: ÜSTEL VE LOGARİTMİK -->
+    <div id="module-advanced" class="interactive-panel">
+        <div class="top-row-controls" style="justify-content: center;">
+            <select id="func_selector_adv" class="type-select math-select" style="font-size: 0.95em; padding: 2px 6px;" onchange="updateAdvInputRanges(); drawAdvancedGraph();">
+                <option value="exponential">f(x) = k &middot; aᵐˣ⁺ʳ + s</option>
+                <option value="logarithmic">f(x) = k &middot; logₐ(mx + r) + s</option>
+            </select>
+        </div>
+
+        <div class="workspace-display">
+            <div>
+                <div class="adv-controls-container">
+                    <label for="adv-k">k (Çarpan):</label><input type="range" id="adv-k" min="-5" max="5" step="0.5" value="1" oninput="drawAdvancedGraph()"><span id="adv-k_val">1</span>
+                    <label for="adv-a" id="adv-a_label">a (Taban):</label><input type="range" id="adv-a" min="0.5" max="5" step="0.5" value="2" oninput="drawAdvancedGraph()"><span id="adv-a_val">2</span>
+                    <label for="adv-m">m (Katsayı):</label><input type="range" id="adv-m" min="-5" max="5" step="0.5" value="1" oninput="drawAdvancedGraph()"><span id="adv-m_val">1</span>
+                    <label for="adv-r">r (İç Öteleme):</label><input type="range" id="adv-r" min="-5" max="5" step="0.5" value="0" oninput="drawAdvancedGraph()"><span id="adv-r_val">0</span>
+                    <label for="adv-s">s (Düşey):</label><input type="range" id="adv-s" min="-5" max="5" step="0.5" value="0" oninput="drawAdvancedGraph()"><span id="adv-s_val">0</span>
+                </div>
+            </div>
+            <div>
+                <canvas id="graph-advanced" class="graph-container"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODÜL 3: TRİGONOMETRİK -->
+    <div id="module-trigonometric" class="interactive-panel">
+        <div class="top-row-controls" style="justify-content: center;">
+            <select id="func_selector_trig" class="type-select math-select" style="font-size: 0.95em; padding: 2px 6px;" onchange="drawTrigGraph()">
+                <option value="sin">f(x) = k &middot; sin(mx + r) + s</option>
+                <option value="cos">f(x) = k &middot; cos(mx + r) + s</option>
+                <option value="tan">f(x) = k &middot; tan(mx + r) + s</option>
+                <option value="cot">f(x) = k &middot; cot(mx + r) + s</option>
+            </select>
+        </div>
+
+        <div class="workspace-display">
+            <div>
+                <div class="adv-controls-container" style="grid-template-columns: 80px 1fr 45px;">
+                    <label for="trig-k">k (Genlik):</label><input type="range" id="trig-k" min="-5" max="5" step="0.5" value="1" oninput="drawTrigGraph()"><span id="trig-k_val">1</span>
+                    <label for="trig-m">m (Frekans):</label><input type="range" id="trig-m" min="-5" max="5" step="0.5" value="1" oninput="drawTrigGraph()"><span id="trig-m_val">1</span>
+                    <label for="trig-r">r (Faz):</label><input type="range" id="trig-r" min="-1" max="1" step="0.25" value="0" oninput="drawTrigGraph()"><span id="trig-r_val">0,00 &pi;</span>
+                    <label for="trig-s">s (Düşey):</label><input type="range" id="trig-s" min="-5" max="5" step="0.5" value="0" oninput="drawTrigGraph()"><span id="trig-s_val">0</span>
+                </div>
+            </div>
+            <div>
+                <canvas id="graph-trigonometric" class="graph-container"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchModule() {
+    const val = document.getElementById('master_selector').value;
+    document.querySelectorAll('.interactive-panel').forEach(panel => panel.classList.remove('active-module'));
+    
+    if (val === 'algebraic') {
+        document.getElementById('module-algebraic').classList.add('active-module');
+        updateAlgebraic();
+    } else if (val === 'advanced') {
+        document.getElementById('module-advanced').classList.add('active-module');
+        updateAdvInputRanges();
+        drawAdvancedGraph();
+    } else if (val === 'trigonometric') {
+        document.getElementById('module-trigonometric').classList.add('active-module');
+        drawTrigGraph();
+    }
+}
+
+let currentMode = 'sum';
+let isResultVisible = false;
+
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-group .mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-mode-' + mode).classList.add('active');
+    updateAlgebraic();
+}
+
+function toggleResult() {
+    isResultVisible = !isResultVisible;
+    const resBox = document.getElementById('result-content');
+    const btn = document.getElementById('toggle-result-btn');
+    if (isResultVisible) {
+        resBox.style.display = 'block';
+        btn.innerText = 'Gizle';
+    } else {
+        resBox.style.display = 'none';
+        btn.innerText = 'Sonucu Göster';
+    }
+}
+
+function toggleFunctionType(target) {
+    const type = document.getElementById('type-' + target).value;
+    if (target === 'f') {
+        const wrapA = document.getElementById('wrap-a-f');
+        if (type === 'linear') { wrapA.style.display = 'none'; document.getElementById('slider-a').value = 0; }
+        else { wrapA.style.display = 'block'; document.getElementById('slider-a').value = 1; }
+    } else {
+        const wrapM = document.getElementById('wrap-m-g');
+        if (type === 'linear') { wrapM.style.display = 'none'; document.getElementById('slider-m').value = 0; }
+        else { wrapM.style.display = 'block'; document.getElementById('slider-m').value = 1; }
+    }
+    updateAlgebraic();
+}
+
+function updateAlgebraic() {
+    const typeF = document.getElementById('type-f').value;
+    const typeG = document.getElementById('type-g').value;
+    const a = (typeF === 'quadratic') ? parseFloat(document.getElementById('slider-a').value) : 0;
+    const b = parseFloat(document.getElementById('slider-b').value);
+    const c = parseFloat(document.getElementById('slider-c').value);
+    const m = (typeG === 'quadratic') ? parseFloat(document.getElementById('slider-m').value) : 0;
+    const n = parseFloat(document.getElementById('slider-n').value);
+    const k = parseFloat(document.getElementById('slider-k').value);
+
+    document.getElementById('val-a').innerText = a;
+    document.getElementById('val-b').innerText = b;
+    document.getElementById('val-c').innerText = c;
+    document.getElementById('val-m').innerText = m;
+    document.getElementById('val-n').innerText = n;
+    document.getElementById('val-k').innerText = k;
+
+    let fStr = formatExpression(typeF, a, b, c);
+    let gStr = formatExpression(typeG, m, n, k);
+    let eqHTML = `<strong>f</strong> = ${fStr} | <strong>g</strong> = ${gStr}`;
+    let resHTML = "";
+    
+    if (currentMode === 'sum') {
+        let ra = a + m, rb = b + n, rc = c + k;
+        let resExpr = formatExpression((ra !== 0 ? 'quadratic' : 'linear'), ra, rb, rc);
+        resHTML = `<strong>(f+g)</strong> = ${resExpr}`;
+    } else if (currentMode === 'diff') {
+        let ra = a - m, rb = b - n, rc = c - k;
+        let resExpr = formatExpression((ra !== 0 ? 'quadratic' : 'linear'), ra, rb, rc);
+        resHTML = `<strong>(f-g)</strong> = ${resExpr}`;
+    } else if (currentMode === 'mul') {
+        let resExpr = multiplyExpressions(typeF, a, b, c, typeG, m, n, k);
+        resHTML = `<strong>(f&middot;g)</strong> = ${resExpr}`;
+    } else if (currentMode === 'div') {
+        resHTML = `<strong>(f/g)</strong> = (${fStr})/(${gStr})`;
+    }
+
+    document.getElementById('equations-text').innerHTML = eqHTML;
+    document.getElementById('result-content').innerHTML = resHTML;
+    drawAlgebraicGraph(a, b, c, m, n, k, typeF, typeG);
+}
+
+function formatExpression(type, a, b, c) {
+    let parts = [];
+    if (type === 'quadratic') {
+        if (a !== 0) parts.push((a === 1 ? '' : (a === -1 ? '-' : a)) + 'x²');
+        if (b !== 0) parts.push((parts.length > 0 && b > 0 ? ' + ' : (b < 0 ? ' - ' : '')) + Math.abs(b) + 'x');
+        if (c !== 0 || parts.length === 0) parts.push(parts.length > 0 ? (c > 0 ? ' + ' + c : ' - ' + Math.abs(c)) : c);
+    } else {
+        if (b !== 0) parts.push((b === 1 ? '' : (b === -1 ? '-' : b)) + 'x');
+        if (c !== 0 || parts.length === 0) parts.push(parts.length > 0 ? (c > 0 ? ' + ' + c : ' - ' + Math.abs(c)) : c);
+    }
+    return parts.join('');
+}
+
+function multiplyExpressions(t1, a1, b1, c1, t2, a2, b2, c2) {
+    let deg4 = a1 * a2, deg3 = a1 * b2 + b1 * a2, deg2 = a1 * c2 + b1 * b2 + c1 * a2, deg1 = b1 * c2 + c1 * b2, deg0 = c1 * c2;
+    let parts = [];
+    if (deg4 !== 0) parts.push((deg4 === 1 ? '' : (deg4 === -1 ? '-' : deg4)) + 'x⁴');
+    if (deg3 !== 0) parts.push((parts.length > 0 && deg3 > 0 ? ' + ' : (deg3 < 0 ? ' - ' : '')) + (Math.abs(deg3) === 1 ? '' : Math.abs(deg3)) + 'x³');
+    if (deg2 !== 0) parts.push((parts.length > 0 && deg2 > 0 ? ' + ' : (deg2 < 0 ? ' - ' : '')) + (Math.abs(deg2) === 1 ? '' : Math.abs(deg2)) + 'x²');
+    if (deg1 !== 0) parts.push((parts.length > 0 && deg1 > 0 ? ' + ' : (deg1 < 0 ? ' - ' : '')) + Math.abs(deg1) + 'x');
+    if (deg0 !== 0 || parts.length === 0) parts.push(parts.length > 0 ? (deg0 > 0 ? ' + ' + deg0 : ' - ' + Math.abs(deg0)) : deg0);
+    return parts.join('');
+}
+
+function drawAlgebraicGraph(a, b, c, m, n, k, typeF, typeG) {
+    const canvas = document.getElementById('graph-algebraic');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.scale(dpr, dpr);
+
+    ctx.beginPath(); ctx.strokeStyle = '#f1f2f6'; ctx.lineWidth = 1;
+    for(let x = 0; x <= w; x += 20) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+    for(let y = 0; y <= h; y += 20) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+    ctx.stroke();
+
+    const ox = w / 2, oy = h / 2, scale = 18;
+    ctx.beginPath(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.2;
+    ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+
+    const showF = document.getElementById('show-f').checked;
+    const showG = document.getElementById('show-g').checked;
+    let fPts = [], gPts = [], resPts = [];
+
+    for (let px = 0; px <= w; px += 1) {
+        let x = (px - ox) / scale;
+        let fx = (typeF === 'quadratic') ? (a * x * x + b * x + c) : (b * x + c);
+        let gx = (typeG === 'quadratic') ? (m * x * x + n * x + k) : (n * x + k);
+        let pyF = oy - fx * scale, pyG = oy - gx * scale;
+        if (showF) fPts.push({px, py: pyF});
+        if (showG) gPts.push({px, py: pyG});
+
+        let res = (currentMode === 'sum') ? fx + gx : (currentMode === 'diff') ? fx - gx : (currentMode === 'mul') ? fx * gx : (Math.abs(gx) > 0.05 ? fx / gx : NaN);
+        let pyRes = oy - res * scale;
+        if (!isNaN(pyRes)) resPts.push({px, py: pyRes});
+    }
+
+    if (showF) drawLine(ctx, fPts, '#2980b9', 2);
+    if (showG) drawLine(ctx, gPts, '#27ae60', 2);
+    let resCol = currentMode === 'sum' ? '#d35400' : currentMode === 'diff' ? '#c0392b' : currentMode === 'mul' ? '#795548' : '#8e44ad';
+    if (resPts.length > 0) { ctx.save(); if (currentMode === 'div') ctx.setLineDash([3,3]); drawLine(ctx, resPts, resCol, 2); ctx.restore(); }
+    ctx.restore();
+}
+
+function drawLine(ctx, pts, col, w) {
+    if (pts.length < 2) return;
+    ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = w;
+    ctx.moveTo(pts[0].px, pts[0].py);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].px, pts[i].py);
+    ctx.stroke();
+}
+
+/* ÜSTEL & LOGARİTMİK */
+const advInputs = { k: document.getElementById('adv-k'), a: document.getElementById('adv-a'), m: document.getElementById('adv-m'), r: document.getElementById('adv-r'), s: document.getElementById('adv-s') };
+const advDisplays = { k: document.getElementById('adv-k_val'), a: document.getElementById('adv-a_val'), m: document.getElementById('adv-m_val'), r: document.getElementById('adv-r_val'), s: document.getElementById('adv-s_val') };
+const advFuncSelector = document.getElementById('func_selector_adv');
+
+function updateAdvInputRanges() {
+    if (advFuncSelector.value === 'exponential') { advInputs.a.min = "0.5"; advInputs.a.max = "5"; advInputs.a.step = "0.5"; document.getElementById('adv-a_label').textContent = "a (Taban>0):"; }
+    else { advInputs.a.min = "1.1"; advInputs.a.max = "5"; advInputs.a.step = "0.1"; document.getElementById('adv-a_label').textContent = "a (Taban>1):"; }
+}
+
+function drawAdvancedGraph() {
+    const canvas = document.getElementById('graph-advanced');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.scale(dpr, dpr);
+
+    const ox = w / 2, oy = h / 2, scaleX = w / 12, scaleY = h / 12;
+    const type = advFuncSelector.value;
+    const k = parseFloat(advInputs.k.value), a = parseFloat(advInputs.a.value), m = parseFloat(advInputs.m.value), r = parseFloat(advInputs.r.value), s = parseFloat(advInputs.s.value);
+    
+    advDisplays.k.textContent = k; advDisplays.a.textContent = a; advDisplays.m.textContent = m; advDisplays.r.textContent = r; advDisplays.s.textContent = s;
+
+    ctx.beginPath(); ctx.strokeStyle = '#e9ecef'; ctx.lineWidth = 1;
+    for(let x = -5; x <= 5; x++) { let px = ox + x * (w/12); ctx.moveTo(px, 0); ctx.lineTo(px, h); }
+    for(let y = -5; y <= 5; y++) { let py = oy - y * (h/12); ctx.moveTo(0, py); ctx.lineTo(w, py); }
+    ctx.stroke();
+
+    ctx.beginPath(); ctx.strokeStyle = '#495057'; ctx.lineWidth = 1.2;
+    ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+
+    ctx.beginPath(); ctx.strokeStyle = type === 'exponential' ? '#0d6efd' : '#dc3545'; ctx.lineWidth = 2;
+    let first = true, prevY = 0;
+    for (let px = 0; px <= w; px++) {
+        let mathX = (px - ox) / scaleX, inner = m * mathX + r, mathY = NaN;
+        if (type === 'exponential' && a > 0) mathY = k * Math.pow(a, inner) + s;
+        else if (type === 'logarithmic' && a > 1 && inner > 0) mathY = k * (Math.log(inner) / Math.log(a)) + s;
         
-        const funcSelector = document.getElementById('func_selector');
-        const inputs = {
-            k: document.getElementById('k_slider'),
-            m: document.getElementById('m_slider'),
-            r: document.getElementById('r_slider'),
-            s: document.getElementById('s_slider')
-        };
-        const displays = {
-            k: document.getElementById('k_val'),
-            m: document.getElementById('m_val'),
-            r: document.getElementById('r_val'),
-            s: document.getElementById('s_val')
-        };
+        if (!isNaN(mathY) && isFinite(mathY)) {
+            let py = oy - mathY * scaleY;
+            if (first) { ctx.moveTo(px, py); first = false; }
+            else { if (Math.abs(mathY - prevY) > 20) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+            prevY = mathY;
+        } else { first = true; }
+    }
+    ctx.stroke(); ctx.restore();
+}
 
-        function drawGraph() {
-            const dpr = window.devicePixelRatio || 1;
-            const displayWidth = canvas.clientWidth;
-            const displayHeight = canvas.clientHeight;
+/* TRİGONOMETRİK */
+const trigInputs = { k: document.getElementById('trig-k'), m: document.getElementById('trig-m'), r: document.getElementById('trig-r'), s: document.getElementById('trig-s') };
+const trigDisplays = { k: document.getElementById('trig-k_val'), m: document.getElementById('trig-m_val'), r: document.getElementById('trig-r_val'), s: document.getElementById('trig-s_val') };
+const trigFuncSelector = document.getElementById('func_selector_trig');
 
-            if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
-                canvas.width = displayWidth * dpr;
-                canvas.height = displayHeight * dpr;
-            }
+function drawTrigGraph() {
+    const canvas = document.getElementById('graph-trigonometric');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.scale(dpr, dpr);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.scale(dpr, dpr);
+    const ox = w / 2, oy = h / 2, scaleX = w / (4 * Math.PI), scaleY = h / 12;
+    const type = trigFuncSelector.value;
+    const k = parseFloat(trigInputs.k.value), m = parseFloat(trigInputs.m.value), rf = parseFloat(trigInputs.r.value), r = rf * Math.PI, s = parseFloat(trigInputs.s.value);
+    
+    trigDisplays.k.textContent = k; trigDisplays.m.textContent = m; trigDisplays.r.innerHTML = rf.toFixed(2) + " &pi;"; trigDisplays.s.textContent = s;
 
-            const rangeX = 5 * Math.PI; 
-            const rangeY = 12;
-            
-            const scaleX = displayWidth / rangeX;
-            const scaleY = displayHeight / rangeY;
-            
-            const originX = displayWidth / 2;
-            const originY = displayHeight / 2;
-            
-            const funcType = funcSelector.value;
-            const k = parseFloat(inputs.k.value);
-            const m = parseFloat(inputs.m.value);
-            const r_factor = parseFloat(inputs.r.value);
-            const r = r_factor * Math.PI; 
-            const s = parseFloat(inputs.s.value);
-            
-            displays.k.textContent = k.toString().replace('.', ',');
-            displays.m.textContent = m.toString().replace('.', ',');
-            displays.r.innerHTML = r_factor.toFixed(2).replace('.', ',') + " &pi;";
-            displays.s.textContent = s.toString().replace('.', ',');
+    ctx.beginPath(); ctx.strokeStyle = '#e9ecef'; ctx.lineWidth = 1;
+    for(let x = -2*Math.PI; x <= 2*Math.PI; x += Math.PI/2) { let px = ox + x * scaleX; ctx.moveTo(px, 0); ctx.lineTo(px, h); }
+    for(let y = -5; y <= 5; y++) { let py = oy - y * scaleY; ctx.moveTo(0, py); ctx.lineTo(w, py); }
+    ctx.stroke();
 
-            // Altlık (Grid) Çizimi
-            ctx.beginPath();
-            ctx.strokeStyle = '#e9ecef';
-            ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.strokeStyle = '#495057'; ctx.lineWidth = 1.2;
+    ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
-            for(let x = -2 * Math.PI; x <= 2 * Math.PI; x += Math.PI / 2) {
-                let px = originX + x * scaleX;
-                ctx.moveTo(px, 0);
-                ctx.lineTo(px, displayHeight);
-            }
-            for(let y = -5; y <= 5; y++) {
-                let py = originY - y * scaleY;
-                ctx.moveTo(0, py);
-                ctx.lineTo(displayWidth, py);
-            }
-            ctx.stroke();
+    ctx.beginPath();
+    ctx.strokeStyle = type === 'sin' ? '#0d6efd' : type === 'cos' ? '#dc3545' : type === 'tan' ? '#198754' : '#fd7e14';
+    ctx.lineWidth = 2;
 
-            // Ana Eksenlerin Çizimi
-            ctx.beginPath();
-            ctx.strokeStyle = '#495057';
-            ctx.lineWidth = 1.5;
-            ctx.moveTo(0, originY);
-            ctx.lineTo(displayWidth, originY);
-            ctx.moveTo(originX, 0);
-            ctx.lineTo(originX, displayHeight);
-            ctx.stroke();
+    let first = true, prevY = 0;
+    for (let px = 0; px <= w; px++) {
+        let mathX = (px - ox) / scaleX, angle = m * mathX + r, mathY = 0;
+        if (type === 'sin') mathY = k * Math.sin(angle) + s;
+        else if (type === 'cos') mathY = k * Math.cos(angle) + s;
+        else if (type === 'tan') mathY = k * Math.tan(angle) + s;
+        else if (type === 'cot') { let sv = Math.sin(angle); mathY = k * (Math.cos(angle) / (Math.abs(sv) < 1e-6 ? 1e-6 : sv)) + s; }
 
-            // Eksen Değerlerinin Yazdırılması
-            ctx.font = '12px "Segoe UI", Tahoma, sans-serif';
-            ctx.fillStyle = '#495057';
+        let py = oy - mathY * scaleY;
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else { if (Math.abs(mathY - prevY) > 20) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+        prevY = mathY;
+    }
+    ctx.stroke(); ctx.restore();
+}
 
-            // Y Ekseni Etiketleri (Tümü eksenin sol tarafında toplandı)
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'middle';
-            for(let y = -5; y <= 5; y++) {
-                if (y !== 0) {
-                    let py = originY - y * scaleY;
-                    ctx.fillText(y.toString(), originX - 8, py);
-                }
-            }
+updateAlgebraic();
+</script>
 
-            // X Ekseni Etiketleri (Radyan cinsinden)
-            const xTicks = [
-                {val: -2 * Math.PI, text: "-2\u03C0"},
-                {val: -1.5 * Math.PI, text: "-3\u03C0/2"},
-                {val: -Math.PI, text: "-\u03C0"},
-                {val: -0.5 * Math.PI, text: "-\u03C0/2"},
-                {val: 0.5 * Math.PI, text: "\u03C0/2"},
-                {val: Math.PI, text: "\u03C0"},
-                {val: 1.5 * Math.PI, text: "3\u03C0/2"},
-                {val: 2 * Math.PI, text: "2\u03C0"}
-            ];
-
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            xTicks.forEach(tick => {
-                let px = originX + tick.val * scaleX;
-                ctx.fillText(tick.text, px, originY + 8);
-            });
-
-            // Orijin Noktası (0) - Sol alt köşede hizalı
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'top';
-            ctx.fillText("0", originX - 5, originY + 5);
-
-            // Fonksiyon Eğrisinin Çizimi
-            ctx.beginPath();
-            
-            if (funcType === 'sin') ctx.strokeStyle = '#0d6efd';
-            else if (funcType === 'cos') ctx.strokeStyle = '#dc3545';
-            else if (funcType === 'tan') ctx.strokeStyle = '#198754';
-            else if (funcType === 'cot') ctx.strokeStyle = '#fd7e14';
-            
-            ctx.lineWidth = 2.5;
-            
-            let isFirstPoint = true;
-            let prevMathY = 0;
-            
-            for (let px = 0; px <= displayWidth; px++) {
-                let mathX = (px - originX) / scaleX;
-                let angle = m * mathX + r;
-                let mathY = 0;
-
-                if (funcType === 'sin') {
-                    mathY = k * Math.sin(angle) + s;
-                } else if (funcType === 'cos') {
-                    mathY = k * Math.cos(angle) + s;
-                } else if (funcType === 'tan') {
-                    mathY = k * Math.tan(angle) + s;
-                } else if (funcType === 'cot') {
-                    mathY = k * (Math.cos(angle) / Math.sin(angle)) + s;
-                }
-                
-                let py = originY - (mathY * scaleY);
-                
-                if (isFirstPoint) {
-                    ctx.moveTo(px, py);
-                    isFirstPoint = false;
-                } else {
-                    if (Math.abs(mathY - prevMathY) > 10) {
-                        ctx.moveTo(px, py);
-                    } else {
-                        ctx.lineTo(px, py);
-                    }
-                }
-                prevMathY = mathY;
-            }
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        Object.values(inputs).forEach(input => {
-            input.addEventListener('input', drawGraph);
-        });
-        funcSelector.addEventListener('change', drawGraph);
-
-        window.addEventListener('resize', drawGraph);
-        drawGraph();
-    </script>
 </body>
 </html>
